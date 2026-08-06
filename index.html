@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>축제 추천 플랫폼 API 연결 테스트</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #202124;
+        background: #f5f6f8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      main {
+        width: min(960px, calc(100% - 32px));
+        margin: 40px auto;
+      }
+
+      h1,
+      h2 {
+        margin-top: 0;
+      }
+
+      .notice,
+      section,
+      .result-card {
+        padding: 20px;
+        border: 1px solid #dfe3e8;
+        border-radius: 12px;
+        background: #fff;
+      }
+
+      .notice {
+        margin-bottom: 20px;
+        border-color: #f2d38a;
+        background: #fff8e7;
+      }
+
+      section {
+        margin-bottom: 16px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-weight: 700;
+      }
+
+      label span {
+        color: #5f6368;
+        font-size: 13px;
+        font-weight: 400;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #c9ced6;
+        border-radius: 8px;
+        font: inherit;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      button {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 8px;
+        color: #fff;
+        background: #3157d5;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.55;
+      }
+
+      .result-card {
+        margin-top: 12px;
+      }
+
+      .result-card[data-status="success"] {
+        border-color: #55a66b;
+      }
+
+      .result-card[data-status="error"] {
+        border-color: #d35f5f;
+      }
+
+      .result-card[data-status="running"] {
+        border-color: #4f79de;
+      }
+
+      .result-card[data-status="empty"] {
+        border-color: #d8a22d;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 10px 0 0;
+        padding: 14px;
+        border-radius: 8px;
+        background: #111827;
+        color: #e5e7eb;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>축제 추천 플랫폼 API 연결 테스트</h1>
+      <div class="notice">
+        입력값은 저장하거나 결과에 출력하지 않습니다. 다만 API 요청에 포함되므로 개발자 도구의
+        Network 탭에서는 인증키와 로그인 정보가 보일 수 있습니다. 키가 들어 있는 화면을 공유하지 마세요.
+      </div>
+
+      <section>
+        <h2>1. TourAPI</h2>
+        <div class="grid">
+          <label>
+            TourAPI 일반 인증키(Decoding)
+            <input id="tour-key" type="password" autocomplete="off" />
+          </label>
+          <label>
+            조회 기간
+            <span>축제 시작일과 종료일을 YYYYMMDD로 입력합니다.</span>
+            <div class="grid">
+              <input id="event-start-date" value="20260101" inputmode="numeric" />
+              <input id="event-end-date" value="20261231" inputmode="numeric" />
+            </div>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="tour-test-button" type="button">축제 목록·상세 테스트</button>
+        </div>
+        <div id="tour-result" class="result-card" data-status="idle">아직 실행하지 않았습니다.</div>
+      </section>
+
+      <section>
+        <h2>2. Kakao Local</h2>
+        <div class="grid">
+          <label>
+            Kakao REST API 키
+            <input id="kakao-key" type="password" autocomplete="off" />
+          </label>
+          <label>
+            테스트 좌표
+            <span>x는 경도, y는 위도입니다.</span>
+            <div class="grid">
+              <input id="longitude" value="126.9780" inputmode="decimal" />
+              <input id="latitude" value="37.5665" inputmode="decimal" />
+            </div>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="kakao-test-button" type="button">주변 장소 3종 테스트</button>
+          <button id="flow-test-button" type="button">TourAPI → Kakao 연결 테스트</button>
+        </div>
+        <div id="kakao-result" class="result-card" data-status="idle">아직 실행하지 않았습니다.</div>
+        <div id="flow-result" class="result-card" data-status="idle">아직 실행하지 않았습니다.</div>
+      </section>
+
+      <section>
+        <h2>3. Supabase Auth</h2>
+        <div class="grid">
+          <label>
+            Project URL
+            <input id="supabase-url" type="url" placeholder="https://프로젝트.supabase.co" autocomplete="off" />
+          </label>
+          <label>
+            Publishable key
+            <input id="supabase-key" type="password" autocomplete="off" />
+          </label>
+          <label>
+            테스트 계정 이메일
+            <input id="supabase-email" type="email" autocomplete="off" />
+          </label>
+          <label>
+            테스트 계정 비밀번호
+            <input id="supabase-password" type="password" autocomplete="off" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="supabase-test-button" type="button">기존 계정 로그인 테스트</button>
+        </div>
+        <div id="supabase-result" class="result-card" data-status="idle">
+          회원을 새로 만들지 않고 이미 존재하는 테스트 계정만 검사합니다.
+        </div>
+      </section>
+    </main>
+
+    <script src="./api-test.js" defer></script>
+  </body>
+</html>
